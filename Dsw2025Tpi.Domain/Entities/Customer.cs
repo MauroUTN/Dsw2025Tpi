@@ -1,12 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace Dsw2025Tpi.Domain.Entities
+namespace Dsw2025Tpi.Domain.Entities;
+
+public class Customer : EntityBase
 {
-    internal class Customer
-    {
-    }
+    [Required]
+    public string FirstName { get; set; } = null!;
+
+    [Required]
+    public string LastName { get; set; } = null!;
+
+    [Required]
+    [EmailAddress]
+    public string Email { get; set; } = null!;
+
+    public ICollection<Order> Orders { get; set; } = new List<Order>();
 }
+
