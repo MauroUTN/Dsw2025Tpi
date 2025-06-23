@@ -8,5 +8,7 @@ namespace Dsw2025Tpi.Application.Dtos
 {
     internal class OrderItemDto
     {
+        public Guid ProductId { get; set; }
+        public int Quantity { get; set; }
     }
 }

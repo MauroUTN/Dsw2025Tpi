@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class StockInsuficienteException
+    public class StockInsuficienteException : Exception
     {
+        public StockInsuficienteException(string sku)
+            : base($"Stock insuficiente para el producto con SKU: {sku}")
+        {
+        }
+
     }
-}

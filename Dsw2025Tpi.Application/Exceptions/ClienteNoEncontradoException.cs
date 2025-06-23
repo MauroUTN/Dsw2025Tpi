@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class ClienteNoEncontradoException
+    public class ClienteNoEncontradoException : Exception
     {
+        public ClienteNoEncontradoException(Guid clienteId)
+            : base($"No se encontró el cliente con ID: {clienteId}")
+        {
+        }
     }
 }

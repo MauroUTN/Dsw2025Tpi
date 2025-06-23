@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class ProductNotFoundException
+    public class ProductNotFoundException : Exception
     {
+        public ProductNotFoundException(Guid productId)
+            : base($"No se encontró el producto con ID: {productId}")
+        {
+        }
     }
 }

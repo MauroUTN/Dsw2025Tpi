@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class EstadoInvalidoException
+    public class EstadoInvalidoException : Exception
     {
+        public EstadoInvalidoException(string mensaje)
+             : base(mensaje)
+        {
+        }
     }
 }
