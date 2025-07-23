@@ -12,7 +12,6 @@ namespace Dsw2025Tpi.Application.Interfaces
         Task<ProductModel.responseProductModel?> GetProductById(Guid id);
         Task<IEnumerable<ProductModel.responseProductModel>?> GetAllProducts();
         Task<ProductModel.responseProductModel> AddProduct(ProductModel.requestProductModel request);
-        Task<ProductModel.responseProductModel> UpdateProduct(ProductModel.requestProductModel request);
         Task<ProductModel.responseProductModel> UpdateProduct(Guid id, ProductModel.requestProductModel request);
         Task<ProductModel.responseProductModel> PatchProduct(Guid id);
     }
