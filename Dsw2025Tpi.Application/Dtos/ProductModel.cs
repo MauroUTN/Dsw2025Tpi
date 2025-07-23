@@ -9,8 +9,8 @@ namespace Dsw2025Tpi.Application.Dtos
     public record ProductModel
     {
         public record requestProductModel (String Sku, String Name, String Description, String InternalCode, int StockQuantity,
-            decimal CurrentPrice,bool isActive);
+            decimal CurrentUnitPrice,bool IsActive);
         public record responseProductModel(String Sku, String Name, String Description, String InternalCode, int StockQuantity,
-            decimal CurrentPrice, bool isActive,Guid Id);
+            decimal CurrentUnitPrice, bool IsActive,Guid Id);
     }
 }

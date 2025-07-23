@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Exceptions
 {
-    internal class DuplicatedEntityException : ApplicationException
+    public class DuplicatedEntityException : ApplicationException
     {
         public DuplicatedEntityException(string message) : base(message)
         {

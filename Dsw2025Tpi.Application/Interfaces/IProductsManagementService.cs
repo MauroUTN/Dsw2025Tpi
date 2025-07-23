@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Dsw2025Tpi.Application.Dtos;
 
 namespace Dsw2025Tpi.Application.Interfaces
 {
-    internal interface IProductsManagementService
+    public interface IProductsManagementService
     {
-        Task<ProductModel.ResponseProductModel?> GetProductById(Guid id);
-        Task<IEnumerable<ProductModel.ResponseProductModel>?> GetAllProducts();
-        Task<ProductModel.ResponseProductModel> AddProduct(ProductModel.RequestProductModel request);
-        Task<ProductModel.ResponseProductModel> UpdateProduct(ProductModel.RequestProductModel request);
-        Task<ProductModel.ResponseProductModel> UpdateProduct(Guid id, ProductModel.RequestProductModel request);
-        Task<ProductModel.ResponseProductModel> PatchProduct(Guid id);
+        Task<ProductModel.responseProductModel?> GetProductById(Guid id);
+        Task<IEnumerable<ProductModel.responseProductModel>?> GetAllProducts();
+        Task<ProductModel.responseProductModel> AddProduct(ProductModel.requestProductModel request);
+        Task<ProductModel.responseProductModel> UpdateProduct(ProductModel.requestProductModel request);
+        Task<ProductModel.responseProductModel> UpdateProduct(Guid id, ProductModel.requestProductModel request);
+        Task<ProductModel.responseProductModel> PatchProduct(Guid id);
     }
 }
