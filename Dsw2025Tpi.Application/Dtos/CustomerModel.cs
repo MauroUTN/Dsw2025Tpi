@@ -8,9 +8,9 @@ namespace Dsw2025Tpi.Application.Dtos
 {
     public record CustomerModel
     {
-        public record RequestCustomerModel(string Name, string Email, string Phone, string Address);
+        public record RequestCustomerModel(string Name, string Email, string Phone);
 
-        public record ResponseCustomerModel(Guid Id, string Name, string Email, string Phone, string Address, DateTime CreatedAt);
+        public record ResponseCustomerModel(Guid Id, string Name, string Email, string Phone);
 
     }
 }

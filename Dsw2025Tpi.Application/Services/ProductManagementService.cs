@@ -8,6 +8,7 @@ using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
+using Dsw2025Tpi.Application.Validation;
 
 
 namespace Dsw2025Tpi.Application.Services
@@ -19,6 +20,7 @@ namespace Dsw2025Tpi.Application.Services
         {
             _repository = repository;
         }
+
         public async Task<ProductModel.responseProductModel?> GetProductById(Guid id)
         {
             var product = await _repository.GetById<Product>(id);
@@ -28,6 +30,7 @@ namespace Dsw2025Tpi.Application.Services
                 new ProductModel.responseProductModel(product.Sku, product.Name, product.Description, product.InternalCode, 
                 product.StockQuantity, product.CurrentUnitPrice, product.IsActive, product.Id) : null;
         }
+
         public async Task<IEnumerable<ProductModel.responseProductModel>?> GetAllProducts()
         {
             return (await _repository
@@ -35,9 +38,10 @@ namespace Dsw2025Tpi.Application.Services
                 .Select(p => new ProductModel.responseProductModel(p.Sku, p.Name, p.Description, p.InternalCode, p.StockQuantity,
             p.CurrentUnitPrice, p.IsActive, p.Id));
         }
+
         public async Task<ProductModel.responseProductModel> AddProduct(ProductModel.requestProductModel request)
         {
-            //validacion
+            ProductValidator.Validate(request);
             var exist = await _repository.First<Product>(p => p.Sku == request.Sku);
             if (exist != null)
                 throw new DuplicatedEntityException($"El producto con Sku {request.Sku} ya existe");
@@ -52,7 +56,8 @@ namespace Dsw2025Tpi.Application.Services
             var product = await _repository.GetById<Product>(Id);
             if (product == null)
                 throw new EntityNotFoundException($"Producto con Sku {request.Sku} no encontrado");
-            //validacion
+            ProductValidator.Validate(request);
+
             product.Sku = request.Sku;
             product.InternalCode = request.InternalCode;
             product.Name = request.Name;

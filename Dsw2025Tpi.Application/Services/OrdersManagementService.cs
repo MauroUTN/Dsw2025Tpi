@@ -24,6 +24,7 @@ namespace Dsw2025Tpi.Application.Services
         {
             _repository = repository;
         }
+
         public async Task<OrderModel.ResponseOrderModel?> GetOrderById(Guid id)
         {
             var order = await _repository.GetById<Order>(id, nameof(Order.OrderItems), "OrderItems.Product");
@@ -33,15 +34,17 @@ namespace Dsw2025Tpi.Application.Services
                 new OrderModel.ResponseOrderModel(order.Id, order.OrderDate, order.ShippingAddress, order.BillingAddress, order.Notes, order.CustomerId, order.Status) :
                 null;
         }
+        //Pregunta si se puede usar GetAll en lugar de GetFiltered
         public async Task<IEnumerable<OrderModel.ResponseOrderModel>?> GetAllOrders()
         {
             return (await _repository
                 .GetAll<Order>())?
                 .Select(o => new OrderModel.ResponseOrderModel(o.Id, o.OrderDate, o.ShippingAddress, o.BillingAddress, o.Notes, o.CustomerId, o.Status));
         }
+
         public async Task<OrderModel.ResponseOrderModel> AddOrder(OrderModel.RequestOrderModel request)
-        {
-            // Validación
+        { 
+            OrderValidator.Validate(request);
 
             if (request.Items == null || !request.Items.Any())
                 throw new ArgumentException("La orden debe tener al menos un item.");
@@ -113,8 +116,7 @@ namespace Dsw2025Tpi.Application.Services
 
         public async Task<OrderModel.ResponseOrderModel> PutOrder(Guid id , string newStatus)
         {
-
-
+           // OrderValidator.Validate(request); PREGUNTAR A DINI
             var exist = await _repository.First<Order>(o => o.Id == id);
             if (exist == null)
                 throw new EntityNotFoundException($"No se encontró la orden con ID: {id}");
