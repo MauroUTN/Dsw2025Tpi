@@ -116,11 +116,10 @@ namespace Dsw2025Tpi.Application.Services
 
         public async Task<OrderModel.ResponseOrderModel> PutOrder(Guid id , string newStatus)
         {
-           // OrderValidator.Validate(request); PREGUNTAR A DINI
             var exist = await _repository.First<Order>(o => o.Id == id);
             if (exist == null)
                 throw new EntityNotFoundException($"No se encontró la orden con ID: {id}");
-            var status = Enum.Parse<OrderStatus>(newStatus);
+            var status = Enum.Parse<OrderStatus>(newStatus.ToUpper());
             if (!Enum.IsDefined(typeof(OrderStatus), status))
                 throw new ArgumentException($"El estado de la orden '{newStatus}' no es válido.");
             exist.Status = status;
