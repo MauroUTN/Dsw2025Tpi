@@ -4,22 +4,63 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Dsw2025Tpi.Domain.Entities;
 
 namespace Dsw2025Tpi.Data.Helpers;
 
 public static class DbContextExtensions
 {
-    public static void Seedwork<T>(this Dsw2025TpiContext context, string dataSource) where T : class
+    private static readonly JsonSerializerOptions CachedJsonOptions = new()
     {
-        if (context.Set<T>().Any()) return;
-        var json = File.ReadAllText(Path.Combine(AppContext.BaseDirectory, dataSource));
-        var entities = JsonSerializer.Deserialize<List<T>>(json, new JsonSerializerOptions
+        PropertyNameCaseInsensitive = true,
+    };
+    public static void SeedDatabase(this Dsw2025TpiContext context)
+    {
+        // 1. Customers
+        if (!context.Customers.Any())
         {
-            PropertyNameCaseInsensitive = true,
-        });
-        if (entities == null || entities.Count == 0) return;
-        context.Set<T>().AddRange(entities);
-        context.SaveChanges();
+            var customersJson = File.ReadAllText(
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..","..", "Dsw2025Tpi.Data", "Sources", "customer.json"));
+            var customers = JsonSerializer.Deserialize<List<Customer>>(customersJson, CachedJsonOptions);
+            if (customers != null && customers.Count > 0)
+            {
+                context.Customers.AddRange(customers);
+                context.SaveChanges();
+            }
+        }
+
+        // 2. Products
+        if (!context.Products.Any())
+        {
+            var productsJson = File.ReadAllText(
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Dsw2025Tpi.Data", "Sources", "product.json"));
+            var products = JsonSerializer.Deserialize<List<Product>>(productsJson, CachedJsonOptions);
+            if (products != null && products.Count > 0)
+            {
+                context.Products.AddRange(products);
+                context.SaveChanges();
+            }
+        }
+
+        // 3. Orders (sin OrderItems)
+        if (!context.Orders.Any())
+        {
+            var ordersJson = File.ReadAllText(
+                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Dsw2025Tpi.Data", "Sources", "order.json"));
+            var orders = JsonSerializer.Deserialize<List<Order>>(ordersJson, CachedJsonOptions);
+            if (orders != null && orders.Count > 0)
+            {
+                // Limpia los OrderItems para evitar problemas de navegación
+                foreach (var order in orders)
+                {
+                    order.OrderItems = new List<OrderItem>();
+                }
+                context.Orders.AddRange(orders);
+                context.SaveChanges();
+            }
+        }
+
+
     }
 }
 

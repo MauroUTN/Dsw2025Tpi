@@ -111,18 +111,17 @@ namespace Dsw2025Tpi.Application.Services
             );
         }
 
-        public async Task<OrderModel.ResponseOrderModel> PutOrder(Guid id , OrderModel.RequestOrderModel request)
+        public async Task<OrderModel.ResponseOrderModel> PutOrder(Guid id , string newStatus)
         {
 
-            if (!Enum.IsDefined(typeof(OrderStatus), request.Status))
-            {
-                throw new ArgumentOutOfRangeException("El estado ingresado no es válido.");
-            }
 
-            var exist = await _repository.GetById<Order>(id);
+            var exist = await _repository.First<Order>(o => o.Id == id);
             if (exist == null)
-                throw new KeyNotFoundException($"No se encontró la orden con ID: {id}");
-            exist.Status = request.Status;
+                throw new EntityNotFoundException($"No se encontró la orden con ID: {id}");
+            var status = Enum.Parse<OrderStatus>(newStatus);
+            if (!Enum.IsDefined(typeof(OrderStatus), status))
+                throw new ArgumentException($"El estado de la orden '{newStatus}' no es válido.");
+            exist.Status = status;
 
             await _repository.Update(exist);
 

@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Dsw2025Tpi.Data\Dsw2025Tpi.Data.csproj" />
     <ProjectReference Include="..\Dsw2025Tpi.Domain\Dsw2025Tpi.Domain.csproj" />
   </ItemGroup>

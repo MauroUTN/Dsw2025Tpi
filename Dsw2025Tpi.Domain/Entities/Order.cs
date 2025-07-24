@@ -8,6 +8,7 @@ namespace Dsw2025Tpi.Domain.Entities
 {
     public class Order : EntityBase
     {
+        public Order() { }
         public Order(DateTime orderDate , string shippingAdress , string billingAdress ,Guid customerId , string notes )
         {
             CustomerId = customerId;

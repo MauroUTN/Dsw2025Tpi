@@ -27,8 +27,7 @@ namespace Dsw2025Tpi.Api.Controllers;
         return Ok(orders);
     }
 
-
-    [HttpGet("{id}")] //comentario el que va adentro (dini desconfia)
+    [HttpGet("{id}")] 
 
     public async Task<IActionResult> GetOrderById(Guid id)
     {   try
@@ -39,29 +38,61 @@ namespace Dsw2025Tpi.Api.Controllers;
         catch (InvalidOperationException ioe)
         {
             return NotFound(ioe.Message);
-
-
         }
-            
-       
     }
 
     [HttpPost]
 
     public async Task<IActionResult> AddOrder([FromBody] OrderModel.RequestOrderModel request)
     {
-
         try
         {
             var Order = await _service.AddOrder(request);
             return CreatedAtAction(nameof(GetOrderById), new { id = Order.Id }, Order);
         }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return BadRequest(ioe.Message);
+        }
+        catch (ApplicationException de)
+        {
+            return Conflict(de.Message);
+        }
         catch (Exception ex)
         {
-            return BadRequest($"Error al crear la orden: {ex.Message}");
+            return Problem($"Error al crear la orden: {ex.Message}");
         }
     }
 
-
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateOrderStatus(Guid id, string newStatus)
+    {
+        try
+        {
+            var order = await _service.PutOrder(id, newStatus);
+            if (order == null) return NotFound();
+            return Ok(order);
+        }
+        catch (ArgumentException ae)
+        {
+            return BadRequest(ae.Message);
+        }
+        catch (InvalidOperationException ioe)
+        {
+            return NotFound(ioe.Message);
+        }
+        catch (ApplicationException de)
+        {
+            return Conflict(de.Message);
+        }
+        catch (Exception ex)
+        {
+            return Problem($"Error al actualizar la orden: {ex.Message}");
+        }
+    }
 }
 

@@ -58,8 +58,6 @@ public class Dsw2025TpiContext: DbContext
             .ValueGeneratedNever();
             i.Property(c => c.OrderDate)
             .HasDefaultValueSql("GETDATE()");// Fecha por defecto al momento de la creación
-            i.Property(c => c.TotalAmount)
-            .HasPrecision(15, 2);
             i.Property(c => c.ShippingAddress)
             .HasMaxLength(200)
             .IsRequired();
@@ -76,8 +74,6 @@ public class Dsw2025TpiContext: DbContext
             .HasPrecision(15, 2);
             i.Property(c => c.Quantity)
             .HasDefaultValue(1);// Valor por defecto para cantidad
-            i.Property(c => c.Subtotal)
-            .HasPrecision(15, 2);
         });
     }
 
