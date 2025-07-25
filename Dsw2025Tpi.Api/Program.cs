@@ -35,6 +35,7 @@ public class Program
 
         //  Registra el servicio que estaba faltando
         builder.Services.AddScoped<IOrdersManagementService, OrdersManagementService>();
+        builder.Services.AddScoped<IProductsManagementService, ProductManagementService>();
         builder.Services.AddScoped<IRepository, EfRepository>();
         var app = builder.Build();
 
@@ -42,7 +43,7 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
-            //dbContext.Database.Migrate(); // Aplica migraciones pendientes
+           //dbContext.Database.Migrate(); // Aplica migraciones pendientes
             dbContext.SeedDatabase();     // Carga los datos desde los JSON
         }
 
