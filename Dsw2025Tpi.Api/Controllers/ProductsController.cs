@@ -3,6 +3,7 @@ using Dsw2025Tpi.Application.Interfaces;
 using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Exceptions;
 using ApplicationException = Dsw2025Tpi.Application.Exceptions.ApplicationException;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace Dsw2025Tpi.Api.Controllers;
@@ -10,10 +11,8 @@ namespace Dsw2025Tpi.Api.Controllers;
 
      [ApiController]
     [Route("api/products")]
-
-
-
-    public class ProductsController : ControllerBase
+    [Authorize(Roles = "Admin,User")]
+public class ProductsController : ControllerBase
     {
         private readonly IProductsManagementService _service;
         public ProductsController(IProductsManagementService service)
@@ -52,7 +51,6 @@ namespace Dsw2025Tpi.Api.Controllers;
         try
         {
             var product = await _service.AddProduct(request);
-      //      return CreatedAtAction(nameof(GetProductById), new { id = product.Id }, product); 
               return Ok(product);
         }
         catch (ArgumentException ae)

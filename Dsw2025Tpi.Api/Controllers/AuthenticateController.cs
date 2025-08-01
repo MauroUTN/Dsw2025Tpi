@@ -54,7 +54,6 @@ namespace Dsw2025Tpi.Api.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-            // Opcional: enviar email de confirmación, etc.
             return Ok("Usuario registrado correctamente.");
         }
     }
