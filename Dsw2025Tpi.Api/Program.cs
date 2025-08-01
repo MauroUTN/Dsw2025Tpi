@@ -17,51 +17,103 @@ namespace Dsw2025Tpi.Api;
 
 public class Program
 {
-    public static void Main(string[] args)
+    public static async Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-
         builder.Services.AddControllers();
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+        builder.Services.AddSwaggerGen(o =>
+        {
+            o.SwaggerDoc("v1", new OpenApiInfo
+            {
+                Title = "Desarrollo de Software",
+                Version = "v1",
+            });
+            o.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Name = "Authorization",
+                Description = "Ingresar el token",
+                Type = SecuritySchemeType.ApiKey
+            });
+        });
+
         builder.Services.AddHealthChecks();
+        builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
+                {
+                    options.Password = new PasswordOptions
+                    {
+                        RequiredLength = 8
+                    };
 
-        // Configuración de la base de datos
-        builder.Services.AddDbContext<Dsw2025TpiContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Tpi")));
+                })
+                     .AddEntityFrameworkStores<AuthenticateContext>()
+                     .AddDefaultTokenProviders();
 
-        //  Registra el servicio que estaba faltando
-        builder.Services.AddScoped<IOrdersManagementService, OrdersManagementService>();
-        builder.Services.AddScoped<IProductsManagementService, ProductManagementService>();
-        builder.Services.AddScoped<IRepository, EfRepository>();
+        builder.Services.AddDomainServices(builder.Configuration);
+        builder.Services.AddDbContext<AuthenticateContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Tpi"));
+        });
+        builder.Services.AddSingleton<JwtTokenService>();
+        var jwtConfig = builder.Configuration.GetSection("Jwt");
+        var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
+        var key = Encoding.UTF8.GetBytes(keyText);
+
+        builder.Services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtConfig["Issuer"],
+                ValidAudience = jwtConfig["Audience"],
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                RoleClaimType = ClaimTypes.Role
+            };
+        });
         var app = builder.Build();
 
-        // Ejecuta migraciones y seed de datos al iniciar la app
+        var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();
+
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
-           //dbContext.Database.Migrate(); // Aplica migraciones pendientes
-            dbContext.SeedDatabase();     // Carga los datos desde los JSON
+            //dbContext.Database.Migrate(); 
+            dbContext.SeedDatabase();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            foreach (var roleName in rolesToCreate!)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
+
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+            app.MapControllers();
+
+            app.MapHealthChecks("/healthcheck");
+
+            app.Run();
         }
-
-        // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
-        app.UseHttpsRedirection();
-
-        app.UseAuthorization();
-
-        app.MapControllers();
-        
-        app.MapHealthChecks("/healthcheck");
-
-        app.Run();
     }
 }

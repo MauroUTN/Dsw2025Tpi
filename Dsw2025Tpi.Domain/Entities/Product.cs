@@ -55,7 +55,6 @@ namespace Dsw2025Tpi.Domain.Entities
             }
         }
         public bool IsActive { get; set; } = true;
-        //Relaciones
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

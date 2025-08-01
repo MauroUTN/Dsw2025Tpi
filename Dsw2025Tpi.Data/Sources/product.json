@@ -4,7 +4,7 @@
         "sku": "ABC123",
         "internalCode": "INT-001",
         "name": "Producto de ejemplo",
-        "description": "Descripción del producto de ejemplo.",
+        "description": "Descripciï¿½n del producto de ejemplo.",
         "currentUnitPrice": 199.99,
         "stockQuantity": 50
     },
@@ -12,7 +12,7 @@
         "sku": "XYZ456",
         "internalCode": "INT-002",
         "name": "Otro producto de ejemplo",
-        "description": "Descripción de otro producto de ejemplo.",
+        "description": "Descripciï¿½n de otro producto de ejemplo.",
         "currentUnitPrice": 299.99,
         "stockQuantity": 30
     },
@@ -20,7 +20,7 @@
         "sku": "LMN789",
         "internalCode": "INT-003",
         "name": "Producto adicional",
-        "description": "Descripción de un producto adicional.",
+        "description": "Descripciï¿½n de un producto adicional.",
         "currentUnitPrice": 149.99,
         "stockQuantity": 75
     },
@@ -28,7 +28,7 @@
         "sku": "PQR012",
         "internalCode": "INT-004",
         "name": "Producto especial",
-        "description": "Descripción de un producto especial.",
+        "description": "Descripciï¿½n de un producto especial.",
         "currentUnitPrice": 399.99,
         "stockQuantity": 20
     },
@@ -36,7 +36,7 @@
         "sku": "STU345",
         "internalCode": "INT-005",
         "name": "Producto de temporada",
-        "description": "Descripción de un producto de temporada.",
+        "description": "Descripciï¿½n de un producto de temporada.",
         "currentUnitPrice": 89.99,
         "stockQuantity": 100
     }

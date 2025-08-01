@@ -16,7 +16,6 @@ public static class DbContextExtensions
     };
     public static void SeedDatabase(this Dsw2025TpiContext context)
     {
-        // 1. Customers
         if (!context.Customers.Any())
         {
             var customersJson = File.ReadAllText(
@@ -28,8 +27,6 @@ public static class DbContextExtensions
                 context.SaveChanges();
             }
         }
-
-        // 2. Products
         if (!context.Products.Any())
         {
             var productsJson = File.ReadAllText(
@@ -41,8 +38,6 @@ public static class DbContextExtensions
                 context.SaveChanges();
             }
         }
-
-        // 3. Orders (sin OrderItems)
         if (!context.Orders.Any())
         {
             var ordersJson = File.ReadAllText(
@@ -50,7 +45,6 @@ public static class DbContextExtensions
             var orders = JsonSerializer.Deserialize<List<Order>>(ordersJson, CachedJsonOptions);
             if (orders != null && orders.Count > 0)
             {
-                // Limpia los OrderItems para evitar problemas de navegación
                 foreach (var order in orders)
                 {
                     order.OrderItems = new List<OrderItem>();
