@@ -88,6 +88,15 @@ public class Program
             var authenticateContext = scope.ServiceProvider.GetRequiredService<AuthenticateContext>();
             authenticateContext.Database.Migrate();
             dbContext.SeedDatabase();
+            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+
+            foreach (var roleName in rolesToCreate!)
+            {
+                if (!await roleManager.RoleExistsAsync(roleName))
+                {
+                    await roleManager.CreateAsync(new IdentityRole(roleName));
+                }
+            }
 
             if (app.Environment.IsDevelopment())
             {
