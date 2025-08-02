@@ -37,6 +37,20 @@ public class Program
                 Description = "Ingresar el token",
                 Type = SecuritySchemeType.ApiKey
             });
+            o.AddSecurityRequirement(new OpenApiSecurityRequirement
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
+            });
         });
 
         builder.Services.AddHealthChecks();
@@ -76,7 +90,8 @@ public class Program
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtConfig["Issuer"],
                 ValidAudience = jwtConfig["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(key)
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                RoleClaimType = ClaimTypes.Role
             };
         });
         var app = builder.Build();
@@ -106,6 +121,8 @@ public class Program
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();         
+            
             app.UseAuthorization();
 
             app.MapControllers();
