@@ -80,7 +80,7 @@ public class Program
             };
         });
         var app = builder.Build();
-
+        var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
