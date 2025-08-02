@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
@@ -19,7 +20,7 @@ namespace Dsw2025Tpi.Application.Services
             _config = config;
         }
 
-        public string GenerateToken(string username)
+        public string GenerateToken(string  username)
         {
             var jwtConfig = _config.GetSection("Jwt");
             var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
@@ -29,8 +30,7 @@ namespace Dsw2025Tpi.Application.Services
             var claims = new[]
             {
             new Claim(JwtRegisteredClaimNames.Sub, username),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            //new Claim("role", role)
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
             var token = new JwtSecurityToken(

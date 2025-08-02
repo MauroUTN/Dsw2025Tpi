@@ -11,7 +11,7 @@ namespace Dsw2025Tpi.Api.Controllers;
 
      [ApiController]
     [Route("api/products")]
-    [Authorize(Roles = "Admin,User")]
+    [Authorize]
 public class ProductsController : ControllerBase
     {
         private readonly IProductsManagementService _service;
@@ -19,10 +19,10 @@ public class ProductsController : ControllerBase
         {
             _service = service;
         }
-
+        
         [HttpGet()]
-
-        public async Task<IActionResult> GetAllProducts()
+        [AllowAnonymous]
+    public async Task<IActionResult> GetAllProducts()
         {
             var products = await _service.GetAllProducts();
             if (products == null || !products.Any())
@@ -30,9 +30,8 @@ public class ProductsController : ControllerBase
             return Ok(products);
         }
 
-      [HttpGet()]
-
-    [Route("{id}")]
+      [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetProductById(Guid id)
     {
         try
@@ -46,6 +45,7 @@ public class ProductsController : ControllerBase
         }
     }
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> AddProduct([FromBody] ProductModel.requestProductModel request)
     {
         try
@@ -68,6 +68,7 @@ public class ProductsController : ControllerBase
     }
     
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateProduct(Guid id, [FromBody] ProductModel.requestProductModel request)
     {
         try
@@ -89,6 +90,7 @@ public class ProductsController : ControllerBase
         }
     }
     [HttpPatch("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> PatchProduct(Guid id)
     {
         try

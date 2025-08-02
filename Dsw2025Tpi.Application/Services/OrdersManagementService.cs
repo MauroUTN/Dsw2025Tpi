@@ -34,7 +34,6 @@ namespace Dsw2025Tpi.Application.Services
                 new OrderModel.ResponseOrderModel(order.Id, order.OrderDate, order.ShippingAddress, order.BillingAddress, order.Notes, order.CustomerId, order.Status) :
                 null;
         }
-        //Pregunta si se puede usar GetAll en lugar de GetFiltered
         public async Task<IEnumerable<OrderModel.ResponseOrderModel>?> GetAllOrders()
         {
             return (await _repository

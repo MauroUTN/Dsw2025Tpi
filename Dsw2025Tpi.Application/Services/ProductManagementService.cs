@@ -55,7 +55,7 @@ namespace Dsw2025Tpi.Application.Services
         {
             var product = await _repository.GetById<Product>(Id);
             if (product == null)
-                throw new EntityNotFoundException($"Producto con Sku {request.Sku} no encontrado");
+                throw new EntityNotFoundException($"Producto no encontrado");
             ProductValidator.Validate(request);
 
             product.Sku = request.Sku;

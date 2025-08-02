@@ -76,28 +76,18 @@ public class Program
                 ValidateIssuerSigningKey = true,
                 ValidIssuer = jwtConfig["Issuer"],
                 ValidAudience = jwtConfig["Audience"],
-                IssuerSigningKey = new SymmetricSecurityKey(key),
-                RoleClaimType = ClaimTypes.Role
+                IssuerSigningKey = new SymmetricSecurityKey(key)
             };
         });
         var app = builder.Build();
 
-        var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();
-
         using (var scope = app.Services.CreateScope())
         {
             var dbContext = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
-            //dbContext.Database.Migrate(); 
+            dbContext.Database.Migrate();
+            var authenticateContext = scope.ServiceProvider.GetRequiredService<AuthenticateContext>();
+            authenticateContext.Database.Migrate();
             dbContext.SeedDatabase();
-            var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-
-            foreach (var roleName in rolesToCreate!)
-            {
-                if (!await roleManager.RoleExistsAsync(roleName))
-                {
-                    await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
-            }
 
             if (app.Environment.IsDevelopment())
             {

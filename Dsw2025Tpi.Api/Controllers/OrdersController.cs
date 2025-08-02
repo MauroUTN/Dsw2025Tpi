@@ -3,6 +3,7 @@ using Dsw2025Tpi.Application.Interfaces;
 using Dsw2025Tpi.Application.Dtos;
 using Dsw2025Tpi.Application.Exceptions;
 using Microsoft.AspNetCore.Authorization;
+using ApplicationException = Dsw2025Tpi.Application.Exceptions.ApplicationException;
 
 
 
@@ -11,7 +12,7 @@ namespace Dsw2025Tpi.Api.Controllers;
 
     [ApiController]
     [Route("api/orders")]
-    [Authorize(Roles = "Admin,User")]
+    [Authorize]
 public class OrdersController : ControllerBase  
     {
         private readonly IOrdersManagementService _service;
@@ -21,7 +22,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpGet()]
-
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllOrders()
     {
         var orders = await _service.GetAllOrders();
@@ -30,8 +31,8 @@ public class OrdersController : ControllerBase
         return Ok(orders);
     }
 
-    [HttpGet("{id}")] 
-
+    [HttpGet("{id}")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetOrderById(Guid id)
     {   try
         {
@@ -45,6 +46,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
+    [AllowAnonymous]
 
     public async Task<IActionResult> AddOrder([FromBody] OrderModel.RequestOrderModel request)
     {
@@ -72,6 +74,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> UpdateOrderStatus(Guid id, string newStatus)
     {
         try

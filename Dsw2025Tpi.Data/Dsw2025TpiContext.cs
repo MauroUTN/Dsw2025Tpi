@@ -17,12 +17,11 @@ public class Dsw2025TpiContext: DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        // Configuración de entidades
         modelBuilder.Entity<Customer>(i =>
         {
             i.ToTable("Customers");
             i.Property(c => c.Id)
-            .ValueGeneratedNever();// No se generará automáticamente, se asignará manualmente
+            .ValueGeneratedNever();
             i.Property(c => c.Email)
             .HasMaxLength(320);
             i.Property(c => c.Name)
@@ -34,7 +33,7 @@ public class Dsw2025TpiContext: DbContext
         {
             i.ToTable("Products");
             i.Property(c => c.Id)
-            .ValueGeneratedNever();// No se generará automáticamente, se asignará manualmente
+            .ValueGeneratedNever();
             i.Property(c => c.Sku)
             .HasMaxLength(20)
             .IsRequired();
@@ -47,9 +46,9 @@ public class Dsw2025TpiContext: DbContext
             i.Property(c => c.Description)
             .HasMaxLength(200);
             i.Property(c => c.CurrentUnitPrice)
-            .HasPrecision(15, 2);// Precision para precios
+            .HasPrecision(15, 2);
             i.Property(c => c.StockQuantity)
-            .HasDefaultValue(0);// Valor por defecto para cantidad en stock
+            .HasDefaultValue(0);
         });
         modelBuilder.Entity<Order>(i =>
         {
@@ -57,7 +56,7 @@ public class Dsw2025TpiContext: DbContext
             i.Property(c => c.Id)
             .ValueGeneratedNever();
             i.Property(c => c.OrderDate)
-            .HasDefaultValueSql("GETDATE()");// Fecha por defecto al momento de la creación
+            .HasDefaultValueSql("GETDATE()");
             i.Property(c => c.ShippingAddress)
             .HasMaxLength(200)
             .IsRequired();
@@ -73,7 +72,7 @@ public class Dsw2025TpiContext: DbContext
             i.Property(c => c.UnitPrice)
             .HasPrecision(15, 2);
             i.Property(c => c.Quantity)
-            .HasDefaultValue(1);// Valor por defecto para cantidad
+            .HasDefaultValue(1);
         });
     }
 
