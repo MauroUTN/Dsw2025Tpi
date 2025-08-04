@@ -2,13 +2,11 @@
   "shippingAddress": "123 Main St, Springfield",
   "billingAddress": "123 Main St, Springfield",
   "customerId": "", //Completar
+  "notes": "",
   "orderItems": [
     {
       "productId": "", //Completar
-      "quantity": 0,
-      "name": "Wireless Mouse",
-      "description": "Ergonomic wireless mouse",
-      "unitPrice": 25.99
+      "quantity": 0
     }
   ]
 }

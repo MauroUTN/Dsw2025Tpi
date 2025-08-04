@@ -1,11 +1,15 @@
 {
   "shippingAddress": "123 Main St, Springfield",
   "billingAddress": "123 Main St, Springfield",
-  "customerId": "not-a-guid",
+  "customerId": "", //Completar
   "orderItems": [
     {
       "productId": "", //Completar
       "quantity": 2
+    },
+    {
+      "productId": "", //Completar
+      "quantity": 1
     }
   ]
 }

@@ -36,16 +36,18 @@ namespace Dsw2025Tpi.Application.Services
         }
         public async Task<IEnumerable<OrderModel.ResponseOrderModel>?> GetAllOrders()
         {
-            return (await _repository
-                .GetAll<Order>())?
-                .Select(o => new OrderModel.ResponseOrderModel(o.Id, o.OrderDate, o.ShippingAddress, o.BillingAddress, o.Notes, o.CustomerId, o.Status));
+
+            var activeOrders = await _repository
+                .GetFiltered<Order>(o => !o.Status.Equals(5)) ?? throw new Application.Exceptions.ApplicationException("No hay ordenes no canceladas");
+            return (activeOrders
+                .Select(o => new OrderModel.ResponseOrderModel(o.Id, o.OrderDate, o.ShippingAddress, o.BillingAddress, o.Notes, o.CustomerId, o.Status)));
         }
 
         public async Task<OrderModel.ResponseOrderModel> AddOrder(OrderModel.RequestOrderModel request)
         { 
             OrderValidator.Validate(request);
 
-            if (request.Items == null || !request.Items.Any())
+            if (request.OrderItems == null || !request.OrderItems.Any())
                 throw new ArgumentException("La orden debe tener al menos un item.");
 
             var order = new Order(
@@ -61,13 +63,16 @@ namespace Dsw2025Tpi.Application.Services
             var orderItems = new List<OrderItem>();
             decimal totalAmount = 0;
 
-            foreach (var item in request.Items)
+            foreach (var item in request.OrderItems)
             {
                 var product = await _repository.GetById<Product>(item.ProductId)
                     ?? throw new InvalidOperationException($"Producto no encontrado: {item.ProductId}");
 
                 if (product.StockQuantity < item.Quantity)
                     throw new InvalidOperationException($"Stock insuficiente para el producto: {product.Name}");
+                
+                if(!product.IsActive)
+                    throw new InvalidOperationException($"El producto {product.Name} no esta activo");
 
                 product.StockQuantity -= item.Quantity;
                 await _repository.Update(product);

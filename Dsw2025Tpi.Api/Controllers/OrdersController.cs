@@ -25,10 +25,22 @@ public class OrdersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetAllOrders()
     {
-        var orders = await _service.GetAllOrders();
-        if (orders == null || !orders.Any())
-            return NotFound("No se encontraron órdenes.");
-        return Ok(orders);
+        try
+        {
+
+            var orders = await _service.GetAllOrders();
+            if (orders == null || !orders.Any())
+                 return NotFound("No se encontraron órdenes.");
+            return Ok(orders);
+        }
+        catch(Application.Exceptions.ApplicationException ae)
+        {
+            return BadRequest(ae.Message);
+        }
+        catch (Exception e)
+        {
+            return BadRequest(e.Message);
+        }
     }
 
     [HttpGet("{id}")]
@@ -46,7 +58,7 @@ public class OrdersController : ControllerBase
     }
 
     [HttpPost]
-    [AllowAnonymous]
+    [Authorize(Roles = "User,Admin")]
 
     public async Task<IActionResult> AddOrder([FromBody] OrderModel.RequestOrderModel request)
     {

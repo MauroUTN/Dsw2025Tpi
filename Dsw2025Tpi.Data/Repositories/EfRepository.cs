@@ -17,7 +17,7 @@ public class EfRepository: IRepository
     public async Task<T> Add<T>(T entity) where T : EntityBase
     {
         await _context.AddAsync(entity);
-        await _context.SaveChangesAsync();
+        //await _context.SaveChangesAsync();
         return entity;
     }
 

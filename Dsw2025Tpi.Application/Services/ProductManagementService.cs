@@ -26,6 +26,8 @@ namespace Dsw2025Tpi.Application.Services
             var product = await _repository.GetById<Product>(id);
             if (product == null)
                 throw new EntityNotFoundException($"Product {id} no encontrado");
+            if(!product.IsActive)
+                throw new EntityNotFoundException($"Product {id} no activo");
             return product != null ?
                 new ProductModel.responseProductModel(product.Sku, product.Name, product.Description, product.InternalCode, 
                 product.StockQuantity, product.CurrentUnitPrice, product.IsActive, product.Id) : null;

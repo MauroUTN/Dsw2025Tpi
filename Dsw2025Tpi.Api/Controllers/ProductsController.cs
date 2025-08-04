@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 namespace Dsw2025Tpi.Api.Controllers;
 
 
-     [ApiController]
+    [ApiController]
     [Route("api/products")]
     [Authorize]
 public class ProductsController : ControllerBase
@@ -20,8 +20,8 @@ public class ProductsController : ControllerBase
             _service = service;
         }
         
-        [HttpGet()]
-        [AllowAnonymous]
+    [HttpGet()]
+    [AllowAnonymous]
     public async Task<IActionResult> GetAllProducts()
         {
             var products = await _service.GetAllProducts();
@@ -30,7 +30,7 @@ public class ProductsController : ControllerBase
             return Ok(products);
         }
 
-      [HttpGet("{id}")]
+    [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetProductById(Guid id)
     {
@@ -42,6 +42,14 @@ public class ProductsController : ControllerBase
         catch (InvalidOperationException ioe)
         {
             return NotFound(ioe.Message);
+        }
+        catch(EntityNotFoundException ef)
+        {
+            return BadRequest(ef.Message);
+        }
+        catch (Exception ef)
+        {
+            return BadRequest(ef.Message);
         }
     }
     [HttpPost]
@@ -96,7 +104,7 @@ public class ProductsController : ControllerBase
         try
         {
             var product = await _service.PatchProduct(id);
-            return Ok(product);
+            return NoContent();
         }
         catch (ApplicationException ioe)
         {
