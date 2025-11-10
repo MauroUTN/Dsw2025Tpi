@@ -14,6 +14,7 @@ namespace Dsw2025Tpi.Api.Controllers;
     [Route("api/orders")]
     [Authorize]
 public class OrdersController : ControllerBase  
+
     {
         private readonly IOrdersManagementService _service;
     public OrdersController(IOrdersManagementService service)
@@ -42,6 +43,28 @@ public class OrdersController : ControllerBase
             return BadRequest(e.Message);
         }
     }
+    [HttpGet("paged")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPagedOrders([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        try
+        {
+            var result = await _service.GetOrdersPaged(pageNumber, pageSize);
+            if (result == null || !result.Items.Any())
+                return NotFound("No se encontraron órdenes para esta página.");
+
+            return Ok(result);
+        }
+        catch (Application.Exceptions.ApplicationException ae)
+        {
+            return BadRequest(ae.Message);
+        }
+        catch (Exception e)
+        {
+            return Problem($"Error al obtener las órdenes paginadas: {e.Message}");
+        }
+    }
+
 
     [HttpGet("{id}")]
     [AllowAnonymous]

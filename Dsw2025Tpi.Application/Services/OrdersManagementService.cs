@@ -14,12 +14,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace Dsw2025Tpi.Application.Services
 {
     public class OrdersManagementService : IOrdersManagementService
     {
         private readonly IRepository _repository;
+        private object _context;
+
         public OrdersManagementService(IRepository repository)
         {
             _repository = repository;
@@ -42,6 +46,7 @@ namespace Dsw2025Tpi.Application.Services
             return (activeOrders
                 .Select(o => new OrderModel.ResponseOrderModel(o.Id, o.OrderDate, o.ShippingAddress, o.BillingAddress, o.Notes, o.CustomerId, o.Status)));
         }
+
 
         public async Task<OrderModel.ResponseOrderModel> AddOrder(OrderModel.RequestOrderModel request)
         { 
@@ -85,10 +90,14 @@ namespace Dsw2025Tpi.Application.Services
                 );
                 orderItems.Add(orderItem);
                 totalAmount += product.CurrentUnitPrice * item.Quantity;
+
             }
 
             order.OrderItems = orderItems;
             await _repository.Update(order);
+                    
+             
+
 
             var responseItems = orderItems.Select(oi => new OrderItemModel.ResponseOrderItemModel(
                 oi.Id,
@@ -132,6 +141,52 @@ namespace Dsw2025Tpi.Application.Services
                 exist.Status
             );
 
+        }
+        public async Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(int pageNumber, int pageSize)
+        {
+            var orders = await _repository.GetAll<Order>(nameof(Order.OrderItems), "OrderItems.Product");
+
+            var totalOrders = orders.Count();
+            var pagedOrders = orders
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(o => new OrderModel.ResponseOrderModel(
+                    o.Id,
+                    o.OrderDate,
+                    o.ShippingAddress,
+                    o.BillingAddress,
+                    o.Notes,
+                    o.CustomerId,
+                    o.Status
+                ))
+                .ToList();
+
+            return new PagedResult<OrderModel.ResponseOrderModel>(pagedOrders, totalOrders, pageNumber, pageSize);
+        }
+        public async Task<PagedResult<T>> GetPagedAsync<T>(
+            int pageNumber,
+            int pageSize,
+            Expression<Func<T, bool>>? filter = null,
+            params string[] includes
+        ) where T : class
+        {
+            if (_context is not DbContext dbContext)
+                throw new InvalidOperationException("El contexto proporcionado no es un DbContext válido.");
+
+            IQueryable<T> query = dbContext.Set<T>();
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            foreach (var include in includes)
+                query = query.Include(include);
+
+            var total = await query.CountAsync();
+            var data = await query.Skip((pageNumber - 1) * pageSize)
+                                  .Take(pageSize)
+                                  .ToListAsync();
+
+            return new PagedResult<T>(data, total, pageNumber, pageSize);
         }
     }
 }
