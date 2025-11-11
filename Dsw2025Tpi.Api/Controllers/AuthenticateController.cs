@@ -12,7 +12,7 @@ namespace Dsw2025Tpi.Api.Controllers;
 
 [ApiController]
 [Route("api/auth")]
-[Authorize]
+
 public class AuthenticateController : ControllerBase
 {
     private readonly UserManager<IdentityUser> _userManager;

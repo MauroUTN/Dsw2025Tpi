@@ -79,6 +79,7 @@ public class Program
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+
         })
         .AddJwtBearer(options =>
         {
@@ -94,6 +95,7 @@ public class Program
                 RoleClaimType = ClaimTypes.Role
             };
         });
+        builder.Services.AddTransient<CustomExceptionHandlingMiddleware>();
         var app = builder.Build();
         var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();
         using (var scope = app.Services.CreateScope())
