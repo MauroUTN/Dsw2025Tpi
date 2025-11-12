@@ -31,10 +31,10 @@ public class CustomExceptionHandlingMiddleware : IMiddleware
                 ArgumentNullException => HttpStatusCode.BadRequest,
                 ArgumentException => HttpStatusCode.BadRequest,
                 DuplicatedEntityException => HttpStatusCode.BadRequest,
-               /* InvalidStatusException => HttpStatusCode.BadRequest,
+                InvalidStatusException => HttpStatusCode.BadRequest,
                 NotAuthenticatedException => HttpStatusCode.BadRequest,
                 NotFoundException => HttpStatusCode.NotFound,
-                NoContentException => HttpStatusCode.NoContent,(hacer despues)*/
+                NoContentException => HttpStatusCode.NoContent, 
                 InvalidOperationException => HttpStatusCode.BadRequest,
                 Dsw2025Tpi.Application.Exceptions.ApplicationException => HttpStatusCode.BadRequest,
                 System.ApplicationException => HttpStatusCode.BadRequest,
