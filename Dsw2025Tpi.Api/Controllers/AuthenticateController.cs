@@ -51,7 +51,7 @@ public class AuthenticateController : ControllerBase
     }
 
     [HttpPost("register")]
-    [Authorize(Roles = "Admin")]
+   
     public async Task<IActionResult> Register([FromBody] RegisterModel model)
     {
 

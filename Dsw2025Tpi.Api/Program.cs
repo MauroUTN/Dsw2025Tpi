@@ -22,6 +22,21 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
 
         builder.Services.AddControllers();
+
+        // 1. SERVICIO CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowFrontend",
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173", "http://localhost:5142")
+                               .AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowCredentials();
+
+                });
+        });
+
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen(o =>
         {
@@ -55,21 +70,31 @@ public class Program
 
         builder.Services.AddHealthChecks();
         builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
-                {
-                    options.Password = new PasswordOptions
-                    {
-                        RequiredLength = 8
-                    };
+        {
+            options.Password = new PasswordOptions
+            {
+                RequiredLength = 8
+            };
 
-                })
-                     .AddEntityFrameworkStores<AuthenticateContext>()
-                     .AddDefaultTokenProviders();
+        })
+        .AddEntityFrameworkStores<AuthenticateContext>()
+        .AddDefaultTokenProviders();
 
         builder.Services.AddDomainServices(builder.Configuration);
+
+        // 2. UNIFICACIÓN DE BASE DE DATOS (Ambos usan "DefaultConnection")
+        // Contexto de Negocio
+        builder.Services.AddDbContext<Dsw2025TpiContext>(options =>
+        {
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+        });
+
+        // Contexto de Autenticación
         builder.Services.AddDbContext<AuthenticateContext>(options =>
         {
-            options.UseSqlServer(builder.Configuration.GetConnectionString("Dsw2025Tpi"));
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
         });
+
         builder.Services.AddSingleton<JwtTokenService>();
         var jwtConfig = builder.Configuration.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("JWT Key");
@@ -79,7 +104,6 @@ public class Program
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
         })
         .AddJwtBearer(options =>
         {
@@ -95,15 +119,20 @@ public class Program
                 RoleClaimType = ClaimTypes.Role
             };
         });
-        builder.Services.AddTransient<CustomExceptionHandlingMiddleware>();
+
         var app = builder.Build();
+
         var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();
         using (var scope = app.Services.CreateScope())
         {
+            // Migración 1: Negocio (Crea la DB si no existe)
             var dbContext = scope.ServiceProvider.GetRequiredService<Dsw2025TpiContext>();
             dbContext.Database.Migrate();
+
+            // Migración 2: Auth (Usa la misma DB y agrega tablas de usuarios)
             var authenticateContext = scope.ServiceProvider.GetRequiredService<AuthenticateContext>();
             authenticateContext.Database.Migrate();
+
             dbContext.SeedDatabase();
             var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
@@ -121,10 +150,13 @@ public class Program
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();//
 
-            app.UseAuthentication();         
-            
+            // 3. MIDDLEWARE CORS
+            app.UseCors("AllowFrontend");
+
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllers();
