@@ -84,24 +84,44 @@ namespace Dsw2025Tpi.Application.Services
                 product.StockQuantity, product.CurrentUnitPrice, product.IsActive, product.Id);
         }
 
-        public async Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(int pageNumber, int pageSize)
+        public async Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(
+            int pageNumber,
+            int pageSize,
+            string name,
+            string status // "true", "false" o "todos"
+        )
         {
             var allProducts = await _repository.GetAll<Dsw2025Tpi.Domain.Entities.Product>();
             var query = allProducts.AsQueryable();
 
+            // Filtro por nombre (si viene algo)
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                query = query.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            }
+
+            // Filtro por estado
+            if (!string.IsNullOrWhiteSpace(status) && status.ToLower() != "todos")
+            {
+                if (bool.TryParse(status, out bool activeValue))
+                {
+                    query = query.Where(p => p.IsActive == activeValue);
+                }
+            }
+
             var totalCount = query.Count();
 
-            // Lógica de paginación
             var items = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new ProductModel.responseProductModel(
-                    p.Sku, p.InternalCode ?? "N/A", p.Name, p.Description ?? "",
+                    p.Sku, p.Name, p.Description ?? "", p.InternalCode,
                     p.StockQuantity, p.CurrentUnitPrice, p.IsActive, p.Id
                 ))
                 .ToList();
 
             return new PagedResult<ProductModel.responseProductModel>(items, totalCount, pageNumber, pageSize);
         }
+
     }
 }
