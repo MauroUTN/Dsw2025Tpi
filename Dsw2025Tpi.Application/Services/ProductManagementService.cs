@@ -83,5 +83,25 @@ namespace Dsw2025Tpi.Application.Services
             return new ProductModel.responseProductModel(product.Sku, product.Name, product.Description, product.InternalCode,
                 product.StockQuantity, product.CurrentUnitPrice, product.IsActive, product.Id);
         }
+
+        public async Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(int pageNumber, int pageSize)
+        {
+            var allProducts = await _repository.GetAll<Dsw2025Tpi.Domain.Entities.Product>();
+            var query = allProducts.AsQueryable();
+
+            var totalCount = query.Count();
+
+            // Lógica de paginación
+            var items = query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .Select(p => new ProductModel.responseProductModel(
+                    p.Sku, p.InternalCode ?? "N/A", p.Name, p.Description ?? "",
+                    p.StockQuantity, p.CurrentUnitPrice, p.IsActive, p.Id
+                ))
+                .ToList();
+
+            return new PagedResult<ProductModel.responseProductModel>(items, totalCount, pageNumber, pageSize);
+        }
     }
 }

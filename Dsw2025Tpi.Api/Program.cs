@@ -119,7 +119,7 @@ public class Program
                 RoleClaimType = ClaimTypes.Role
             };
         });
-
+        builder.Services.AddTransient<CustomExceptionHandlingMiddleware>();
         var app = builder.Build();
 
         var rolesToCreate = builder.Configuration.GetSection("Roles").Get<List<string>>();

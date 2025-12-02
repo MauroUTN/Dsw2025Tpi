@@ -62,5 +62,12 @@ public class ProductsController : ControllerBase
             return NoContent();
 
     }
+    [HttpGet("paged")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetProductsPaged([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    {
+        var result = await _service.GetProductsPaged(pageNumber, pageSize);
+        return Ok(result);
+    }
 }
 

@@ -18,7 +18,7 @@ namespace Dsw2025Tpi.Domain.Entities
             Description = description;
             CurrentUnitPrice = currentUnitPrice;
             StockQuantity = stockQuantity;
-            IsActive = isActive;
+            IsActive = true;
         }
         public string Sku { get; set; }
         public string InternalCode { get; set; }
