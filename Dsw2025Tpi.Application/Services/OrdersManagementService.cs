@@ -148,7 +148,8 @@ namespace Dsw2025Tpi.Application.Services
       int pageNumber,
       int pageSize,
       Guid? orderId,
-      string status // ahora en camelCase
+      string status,
+      string searchTerm
   )
         {
             var query = (await _repository.GetAll<Order>())

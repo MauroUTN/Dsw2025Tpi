@@ -36,11 +36,13 @@ public class OrdersController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 10,
         [FromQuery] Guid? orderId = null,
-        [FromQuery] string status = "all"
+        [FromQuery] string status = "all",
+        [FromQuery] string searchTerm = ""
     )
     {
-        var result = await _service.GetOrdersPaged(pageNumber, pageSize, orderId, status);
+        var result = await _service.GetOrdersPaged(pageNumber, pageSize, orderId, status, searchTerm);
         return Ok(result);
+        
     }
 
 
