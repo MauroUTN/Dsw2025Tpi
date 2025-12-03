@@ -6,20 +6,23 @@ namespace Dsw2025Tpi.Application.Dtos
 {
     public class PagedResult<T>
     {
-        public IEnumerable<T> Items { get; }
-        public int TotalItems { get; }
-        public int PageNumber { get; }
-        public int PageSize { get; }
-        public int TotalPages => (int)Math.Ceiling((double)TotalItems / PageSize);
+        public IReadOnlyList<T> Items { get; init; }
+        public int TotalCount { get; init; }
+        public int PageNumber { get; init; }
+        public int PageSize { get; init; }
 
-        public PagedResult(IEnumerable<T> items, int totalItems, int pageNumber, int pageSize)
+        public int TotalPages =>
+            PageSize == 0 ? 1 : (int)Math.Ceiling((double)TotalCount / PageSize);
+
+        public PagedResult(IReadOnlyList<T> items, int totalCount, int pageNumber, int pageSize)
         {
             Items = items;
-            TotalItems = totalItems;
+            TotalCount = totalCount;
             PageNumber = pageNumber;
             PageSize = pageSize;
         }
     }
+
 }
 
 

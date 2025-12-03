@@ -32,15 +32,17 @@ public class OrdersController : ControllerBase
         
     }
     [HttpGet("paged")]
-    [AllowAnonymous]
-    public async Task<IActionResult> GetPagedOrders([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetPagedOrders(
+        [FromQuery] int pageNumber = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] Guid? orderId = null,
+        [FromQuery] string status = "all"
+    )
     {
-        var result = await _service.GetOrdersPaged(pageNumber, pageSize);
-        if (result == null || !result.Items.Any())
-            return NotFound("No se encontraron órdenes.");
+        var result = await _service.GetOrdersPaged(pageNumber, pageSize, orderId, status);
         return Ok(result);
-
     }
+
 
 
     [HttpGet("{id}")]

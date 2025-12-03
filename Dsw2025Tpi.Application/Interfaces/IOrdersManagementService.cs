@@ -13,6 +13,7 @@ namespace Dsw2025Tpi.Application.Interfaces
         Task<IEnumerable<OrderModel.ResponseOrderModel>?> GetAllOrders();
         Task<OrderModel.ResponseOrderModel> AddOrder(OrderModel.RequestOrderModel request);
         Task<OrderModel.ResponseOrderModel> PutOrder(Guid id ,string newStatus);
-        Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(int pageNumber, int pageSize);
+        Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(int pageNumber,int pageSize, Guid? orderId,string status);
+
     }
 }

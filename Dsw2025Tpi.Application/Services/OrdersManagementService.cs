@@ -16,6 +16,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Dsw2025Tpi.Application.Services
 {
@@ -142,27 +144,58 @@ namespace Dsw2025Tpi.Application.Services
             );
 
         }
-        public async Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(int pageNumber, int pageSize)
+        public async Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(
+      int pageNumber,
+      int pageSize,
+      Guid? orderId,
+      string status // ahora en camelCase
+  )
         {
-            var orders = await _repository.GetAll<Order>(nameof(Order.OrderItems), "OrderItems.Product");
+            var query = (await _repository.GetAll<Order>())
+                .AsQueryable();
 
-            var totalOrders = orders.Count();
-            var pagedOrders = orders
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .Select(o => new OrderModel.ResponseOrderModel(
-                    o.Id,
-                    o.OrderDate,
-                    o.ShippingAddress,
-                    o.BillingAddress,
-                    o.Notes,
-                    o.CustomerId,
-                    o.Status
-                ))
-                .ToList();
+            // 🔍 Búsqueda por OrderId(si viene)
+      if (orderId.HasValue)
+            {
+                query = query.Where(o => o.Id == orderId.Value);
+            }
 
-            return new PagedResult<OrderModel.ResponseOrderModel>(pagedOrders, totalOrders, pageNumber, pageSize);
+            // 🟡Filtro por estado(si no es "all")
+      if (!string.IsNullOrWhiteSpace(status) &&
+        !status.Equals("all", StringComparison.OrdinalIgnoreCase))
+            {
+                // si viene por ejemplo "pending", "paid", etc.
+                if (Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
+                {
+                    query = query.Where(o => o.Status == parsedStatus);
+                }
+                else
+                {
+                    // si viene algo inválido podés tirar excepción o ignorar el filtro
+                    // throw new ArgumentException($"Estado de orden inválido: {status}");
+                }
+            }
+
+            var totalCount = query.Count();
+
+            var items = query
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .Select(p => new OrderModel.ResponseOrderModel(
+                p.Id,
+                p.OrderDate,
+                p.ShippingAddress,
+                p.BillingAddress,
+                p.Notes,
+                p.CustomerId,
+                p.Status
+            ))
+            .ToList();
+
+            return new PagedResult<OrderModel.ResponseOrderModel>(items, totalCount, pageNumber, pageSize);
         }
+
+
         public async Task<PagedResult<T>> GetPagedAsync<T>(
             int pageNumber,
             int pageSize,
