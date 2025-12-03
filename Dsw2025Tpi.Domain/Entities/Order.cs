@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Domain.Entities
 {
     public class Order : EntityBase
     {
-        public Order() { }
-        public Order(DateTime orderDate , string shippingAdress , string billingAdress ,Guid customerId , string notes )
+        public Order()
+        {
+            OrderItems = new List<OrderItem>();
+        }
+        public Order(DateTime orderDate, string shippingAdress, string billingAdress, Guid customerId, string? notes)
         {
             CustomerId = customerId;
             OrderDate = orderDate;
@@ -17,19 +18,21 @@ namespace Dsw2025Tpi.Domain.Entities
             BillingAddress = billingAdress;
             Notes = notes;
             Status = OrderStatus.PENDING;
-            OrderItems = [];
+            OrderItems = new List<OrderItem>();
         }
-        public DateTime OrderDate { get; set; }
-        public string? ShippingAddress { get; set; }
-        public string? BillingAddress { get; set; }
-        public string? Notes { get; set; }
-        public decimal TotalAmount => OrderItems.Sum(p => p.Subtotal);
 
+        public DateTime OrderDate { get; set; }
+
+        public string ShippingAddress { get; set; } = null!;
+        public string BillingAddress { get; set; } = null!;
+
+        public string? Notes { get; set; } 
+
+        public decimal TotalAmount => OrderItems != null ? OrderItems.Sum(p => p.Subtotal) : 0;
 
         public OrderStatus Status { get; set; }
         public Guid CustomerId { get; set; }
         public Customer? Customer { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; }
     }
-  
 }

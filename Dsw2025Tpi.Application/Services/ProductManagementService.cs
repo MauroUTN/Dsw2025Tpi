@@ -9,6 +9,7 @@ using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
 using Dsw2025Tpi.Application.Validation;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace Dsw2025Tpi.Application.Services
@@ -88,19 +89,17 @@ namespace Dsw2025Tpi.Application.Services
             int pageNumber,
             int pageSize,
             string name,
-            string status // "true", "false" o "todos"
+            string status 
         )
         {
             var allProducts = await _repository.GetAll<Dsw2025Tpi.Domain.Entities.Product>();
             var query = allProducts.AsQueryable();
 
-            // Filtro por nombre (si viene algo)
             if (!string.IsNullOrWhiteSpace(name))
             {
                 query = query.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
             }
 
-            // Filtro por estado
             if (!string.IsNullOrWhiteSpace(status) && status.ToLower() != "todos")
             {
                 if (bool.TryParse(status, out bool activeValue))

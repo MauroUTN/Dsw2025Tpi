@@ -1,26 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Dsw2025Tpi.Domain.Entities;
 
 namespace Dsw2025Tpi.Domain.Entities
 {
     public class Customer : EntityBase
     {
-        public Customer() { }
-        public Customer(string name , string email , string phoneNumber)
+        public Customer()
+        {
+            Orders = new List<Order>();
+        }
+
+        public Customer(string name, string email, string phoneNumber)
         {
             Name = name;
             Email = email;
             PhoneNumber = phoneNumber;
+            Orders = new List<Order>();
         }
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string PhoneNumber { get; set; }
+
+        public string Name { get; set; } = null!;
+        public string Email { get; set; } = null!;
+        public string PhoneNumber { get; set; } = null!;
 
         public ICollection<Order> Orders { get; set; }
-
     }
 }

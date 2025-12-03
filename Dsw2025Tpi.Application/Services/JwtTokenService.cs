@@ -1,13 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Dsw2025Tpi.Application.Services;
 
@@ -20,7 +15,8 @@ public class JwtTokenService
         _config = config;
     }
 
-    public string GenerateToken(string username, string role)
+    // CAMBIO 1: Agregamos 'userId' como parámetro
+    public string GenerateToken(string userId, string username, string role)
     {
         var jwtConfig = _config.GetSection("Jwt");
         var keyText = jwtConfig["Key"] ?? throw new ArgumentNullException("Jwt Key");
@@ -29,10 +25,12 @@ public class JwtTokenService
 
         var claims = new[]
         {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
+            // CAMBIO 2: El 'Sub' ahora guarda el userId (GUID)
+            new Claim(JwtRegisteredClaimNames.Sub, userId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(ClaimTypes.Role, role)
-
+            new Claim(ClaimTypes.Role, role),
+            // Opcional: Guardamos el username en otro claim por si sirve
+            new Claim(JwtRegisteredClaimNames.UniqueName, username)
         };
 
         var token = new JwtSecurityToken(
