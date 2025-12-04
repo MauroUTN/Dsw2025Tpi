@@ -65,15 +65,21 @@ public class AuthenticateController : ControllerBase
         {
             UserName = model.Username,
             Email = model.Email,
-            PhoneNumber = model.PhoneNumber 
+            PhoneNumber = model.PhoneNumber
         };
 
         var result = await _userManager.CreateAsync(user, model.Password);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
+        string roleToAssign = string.IsNullOrWhiteSpace(model.Rol) ? "User" : model.Rol;
 
-        await _userManager.AddToRoleAsync(user, "User");
+        if (roleToAssign != "Admin" && roleToAssign != "User")
+        {
+            roleToAssign = "User";
+        }
+
+        await _userManager.AddToRoleAsync(user, roleToAssign);
 
         var customerId = Guid.Parse(user.Id);
 
