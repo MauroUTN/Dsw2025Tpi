@@ -64,9 +64,15 @@ public class ProductsController : ControllerBase
     }
     [HttpGet("paged")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetProductsPaged([FromQuery] int pageNumber , [FromQuery] int pageSize , [FromQuery] string name = "", [FromQuery] string status = "todos" )
+    public async Task<IActionResult> GetProductsPaged(
+         [FromQuery] int pageNumber = 1,
+         [FromQuery] int pageSize = 10,
+         [FromQuery] string name = "",
+         [FromQuery] string status = "todos",
+         [FromQuery] bool searchSku = false 
+     )
     {
-        var result = await _service.GetProductsPaged(pageNumber, pageSize,name,status);
+        var result = await _service.GetProductsPaged(pageNumber, pageSize, name, status, searchSku);
         return Ok(result);
     }
 }

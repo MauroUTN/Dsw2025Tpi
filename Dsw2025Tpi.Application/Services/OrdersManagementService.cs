@@ -8,63 +8,50 @@ using Dsw2025Tpi.Application.Exceptions;
 using Dsw2025Tpi.Domain.Entities;
 using Dsw2025Tpi.Domain.Interfaces;
 using Dsw2025Tpi.Application.Validation;
-using Microsoft.EntityFrameworkCore;
 
 namespace Dsw2025Tpi.Application.Services
 {
     public class OrdersManagementService : IOrdersManagementService
     {
         private readonly IRepository _repository;
-        // BORRADO: private object _context;  <-- Esto causaba el error CS8618
 
         public OrdersManagementService(IRepository repository)
         {
             _repository = repository;
         }
 
-        // ... GetOrderById y GetAllOrders se mantienen igual ...
         public async Task<OrderModel.ResponseOrderModel?> GetOrderById(Guid id)
         {
-            var order = await _repository.GetById<Order>(id, nameof(Order.OrderItems), "OrderItems.Product", "Customer");
+            // Incluimos OrderItems para el total y Customer para el nombre
+            var order = await _repository.GetById<Order>(id, "OrderItems", "Customer");
 
             if (order == null)
                 throw new EntityNotFoundException($"Orden {id} no fue encontrada");
 
-            return new OrderModel.ResponseOrderModel(
-                order.Id, order.OrderDate, order.ShippingAddress, order.BillingAddress,
-                order.Notes, order.CustomerId, order.Status,
-                order.Customer?.Name ?? "Cliente Desconocido");
+            return MapToResponse(order);
         }
 
         public async Task<IEnumerable<OrderModel.ResponseOrderModel>?> GetAllOrders()
         {
-            var activeOrders = await _repository.GetFiltered<Order>(o => !o.Status.Equals(5), "Customer");
-            // Usamos '?? Enumerable.Empty<Order>()' para asegurar que no sea nulo
+            var activeOrders = await _repository.GetFiltered<Order>(o => !o.Status.Equals(5), "Customer", "OrderItems");
             var safeOrders = activeOrders ?? Enumerable.Empty<Order>();
 
-            return safeOrders.Select(o => new OrderModel.ResponseOrderModel(
-                o.Id, o.OrderDate, o.ShippingAddress, o.BillingAddress,
-                o.Notes, o.CustomerId, o.Status,
-                o.Customer?.Name ?? "Cliente Desconocido"));
+            return safeOrders.Select(MapToResponse);
         }
 
         public async Task<OrderModel.ResponseOrderModel> AddOrder(OrderModel.RequestOrderModel request)
         {
-            // 1. Validamos (Esto asegura que ShippingAddress NO es null)
             OrderValidator.Validate(request);
 
             if (request.OrderItems == null || !request.OrderItems.Any())
                 throw new ArgumentException("La orden debe tener al menos un item.");
 
-            // 2. Creamos la orden
-            // Usamos '!' en request.ShippingAddress! para decirle al compilador: 
-            // "Confía en mí, el validador de arriba ya chequeó que esto no es null".
             var order = new Order(
                 request.OrderDate,
                 request.ShippingAddress!,
                 request.BillingAddress!,
                 request.CustomerId,
-                request.Notes // Notes ya acepta null en el constructor arreglado
+                request.Notes
             );
 
             await _repository.Add(order);
@@ -97,26 +84,14 @@ namespace Dsw2025Tpi.Application.Services
             order.OrderItems = orderItems;
             await _repository.Update(order);
 
-            var customer = await _repository.GetById<Customer>(request.CustomerId);
-            var customerName = customer?.Name ?? "Cliente Nuevo";
-
-            return new OrderModel.ResponseOrderModel(
-                order.Id,
-                order.OrderDate,
-                order.ShippingAddress,
-                order.BillingAddress,
-                order.Notes,
-                order.CustomerId,
-                order.Status,
-                customerName
-            );
+            // Recargamos la orden completa con Cliente e Items para devolverla bien
+            var fullOrder = await _repository.GetById<Order>(order.Id, "Customer", "OrderItems");
+            return MapToResponse(fullOrder!);
         }
 
-        // ... El resto de métodos (PutOrder, GetOrdersPaged) se mantienen igual ...
-        // Solo asegúrate en GetOrdersPaged de usar el null coalescing si 'query' pudiera ser null
         public async Task<OrderModel.ResponseOrderModel> PutOrder(Guid id, string newStatus)
         {
-            var exist = await _repository.First<Order>(o => o.Id == id, "Customer");
+            var exist = await _repository.First<Order>(o => o.Id == id, "Customer", "OrderItems");
             if (exist == null)
                 throw new EntityNotFoundException($"No se encontró la orden con ID: {id}");
 
@@ -127,29 +102,20 @@ namespace Dsw2025Tpi.Application.Services
             exist.Status = status;
             await _repository.Update(exist);
 
-            return new OrderModel.ResponseOrderModel(
-                exist.Id,
-                exist.OrderDate,
-                exist.ShippingAddress,
-                exist.BillingAddress,
-                exist.Notes,
-                exist.CustomerId,
-                exist.Status,
-                exist.Customer?.Name ?? "Cliente Desconocido"
-            );
+            return MapToResponse(exist);
         }
 
         public async Task<PagedResult<OrderModel.ResponseOrderModel>> GetOrdersPaged(
-     int pageNumber,
-     int pageSize,
-     Guid? orderId,
-     string status,
-     string searchTerm
- )
+            int pageNumber,
+            int pageSize,
+            Guid? orderId,
+            string status,
+            string searchTerm // <--- Este es el dato que ahora llegará desde el front
+        )
         {
-            var query = (await _repository.GetAll<Order>("Customer")).AsQueryable();
+            var allOrders = await _repository.GetAll<Order>("Customer", "OrderItems");
+            var query = (allOrders ?? Enumerable.Empty<Order>()).AsQueryable();
 
-            // ... (Tus filtros de orderId y status se quedan igual) ...
             if (orderId.HasValue)
             {
                 query = query.Where(o => o.Id == orderId.Value);
@@ -160,6 +126,18 @@ namespace Dsw2025Tpi.Application.Services
                 if (Enum.TryParse<OrderStatus>(status, true, out var parsedStatus))
                 {
                     query = query.Where(o => o.Status == parsedStatus);
+                }
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                if (Guid.TryParse(searchTerm, out var parsedId))
+                {
+                    query = query.Where(o => o.Id == parsedId || (o.Customer != null && o.Customer.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)));
+                }
+                else
+                {
+                    query = query.Where(o => o.Customer != null && o.Customer.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase));
                 }
             }
 
@@ -176,13 +154,30 @@ namespace Dsw2025Tpi.Application.Services
                 p.Notes,
                 p.CustomerId,
                 p.Status,
-                // --- CAMBIO AQUÍ ---
-                // Cambiamos "p.Customer?.Name" por la versión compatible con Expression Trees:
+                p.OrderItems != null ? p.OrderItems.Sum(i => i.UnitPrice * i.Quantity) : 0,
                 p.Customer != null ? p.Customer.Name : "Cliente Desconocido"
             ))
             .ToList();
 
             return new PagedResult<OrderModel.ResponseOrderModel>(items, totalCount, pageNumber, pageSize);
+        }
+
+        // Método auxiliar para mapear y evitar repetir código
+        private OrderModel.ResponseOrderModel MapToResponse(Order order)
+        {
+            return new OrderModel.ResponseOrderModel(
+                order.Id,
+                order.OrderDate,
+                order.ShippingAddress,
+                order.BillingAddress,
+                order.Notes,
+                order.CustomerId,
+                order.Status,
+                // Calculamos el total sumando (Precio * Cantidad) de cada item
+                order.OrderItems?.Sum(i => i.UnitPrice * i.Quantity) ?? 0,
+                // Obtenemos el nombre del cliente de forma segura
+                order.Customer != null ? order.Customer.Name : "Cliente Desconocido"
+            );
         }
     }
 }

@@ -14,6 +14,12 @@ namespace Dsw2025Tpi.Application.Interfaces
         Task<ProductModel.responseProductModel> AddProduct(ProductModel.requestProductModel request);
         Task<ProductModel.responseProductModel> UpdateProduct(Guid id, ProductModel.requestProductModel request);
         Task<ProductModel.responseProductModel> PatchProduct(Guid id);
-        Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(int pageNumber, int pageSize,string name,string status);
+        Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(
+            int pageNumber,
+            int pageSize,
+            string name,
+            string status,
+            bool searchSku = false
+        );
     }
 }

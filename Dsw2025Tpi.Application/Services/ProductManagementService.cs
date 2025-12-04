@@ -85,21 +85,38 @@ namespace Dsw2025Tpi.Application.Services
                 product.StockQuantity, product.CurrentUnitPrice, product.IsActive, product.Id);
         }
 
-        public async Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(
-            int pageNumber,
-            int pageSize,
-            string name,
-            string status 
-        )
-        {
-            var allProducts = await _repository.GetAll<Dsw2025Tpi.Domain.Entities.Product>();
+           public async Task<PagedResult<ProductModel.responseProductModel>> GetProductsPaged(
+             int pageNumber,
+             int pageSize,
+             string name,
+             string status,
+             bool searchSku = false // <--- NUEVO PARÁMETRO
+            )
+            {
+            var allProducts = await _repository.GetAll<Product>();
             var query = allProducts.AsQueryable();
 
+            // Filtro por nombre (y SKU si se solicita)
             if (!string.IsNullOrWhiteSpace(name))
             {
-                query = query.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+                if (searchSku)
+                {
+                    // Busca en Nombre O en SKU
+                    query = query.Where(p =>
+                        p.Name.Contains(name, StringComparison.OrdinalIgnoreCase) ||
+                        p.Sku.Contains(name, StringComparison.OrdinalIgnoreCase)
+                    );
+                }
+                else
+                {
+                    // Solo busca en Nombre (Comportamiento para clientes)
+                    query = query.Where(p => p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+                }
             }
 
+            // ... (resto del código de status y paginación igual) ...
+
+            // (Asegúrate de copiar el resto del método igual que antes)
             if (!string.IsNullOrWhiteSpace(status) && status.ToLower() != "todos")
             {
                 if (bool.TryParse(status, out bool activeValue))
@@ -109,7 +126,6 @@ namespace Dsw2025Tpi.Application.Services
             }
 
             var totalCount = query.Count();
-
             var items = query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
